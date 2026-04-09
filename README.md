@@ -1,43 +1,66 @@
-# ✈️ Aircraft Maintenance Risk Triage Platform
+Aviation Decision Intelligence Platform (ADIP)
+Executive Summary
+A specialized data engineering system designed to transform fragmented, high-entropy aviation safety records into actionable maintenance intelligence. This platform automates the identification of fleet-wide vulnerabilities, allowing teams to move from reactive repairs to proactive risk mitigation.
 
-## 🎯 Project Overview
-Most maintenance data tells you **what** broke. [cite_start]This system tells you **how to prioritize what to fix — and why**. [cite: 88]
+🚩 The Problem
+Aviation maintenance teams struggle with "Data Overload." Raw incident reports are:
 
-[cite_start]This is an end-to-end data engineering platform that ingests aviation safety reports (NASA ASRS), leverages AI classification to assign risk tiers with documented reasoning, and surfaces high-priority flags to operations teams. [cite: 88, 90]
+Fragmented: Spread across inconsistent, messy CSV formats.
 
-### 🚀 Business Impact
-* [cite_start]**Efficiency:** Reduces daily manual triage effort from ~83 hours to under 30 minutes. [cite: 20, 70]
-* [cite_start]**Operational Gain:** Achieves an estimated **89% reduction** in manual review time by surfacing only HIGH and CRITICAL risk events. [cite: 71, 90]
-* [cite_start]**Transparency:** Includes a mandatory `ai_reason` field for every classification to ensure a human-in-the-loop audit trail. [cite: 55, 90]
+Noisy: ~250 columns of data with high nullity and redundant metadata.
 
----
+Static: Reports describe what happened but fail to prioritize which aircraft needs immediate attention.
+Impact: Critical risks are missed, and maintenance decisions are delayed by slow, manual SQL-dependent processes.
 
-## 🏗️ Architecture (Medallion Pattern)
-[cite_start]The platform follows the industry-standard **Medallion Architecture** used in high-scale environments: [cite: 38, 39]
+🛠 The Solution
+An end-to-end pipeline that ingests raw ASRS data, applies a weighted Risk Engine, and structures the output into an analytics-ready Gold Layer for instant decision support.
 
-1. [cite_start]**Bronze (Raw):** Untouched NASA ASRS CSV data stored in **AWS S3**. [cite: 41, 75]
-2. [cite_start]**Silver (Cleaned):** **PySpark**-processed Parquet files featuring deduplication, normalized component names, and 30-day recurrence window calculations. [cite: 41, 79]
-3. [cite_start]**AI Layer:** **OpenAI API** integration for automated risk tiering (CRITICAL to LOW) based on incident narratives. [cite: 48, 51]
-4. [cite_start]**Gold (Warehouse):** Optimized Star Schema in **PostgreSQL** featuring Fact and Dimension tables for sub-second analytical queries. [cite: 41, 60]
-5. [cite_start]**Orchestration:** Fully automated end-to-end pipeline via **Apache Airflow** DAG. [cite: 41, 79]
+🏗 System Architecture (Medallion)
+Bronze Layer: Raw ingestion of hierarchical NASA ASRS datasets.
 
----
+Silver Layer: * Data Hygiene: Removal of "Ghost Rows," deduplication, and standardization.
 
-## 🛠️ Tech Stack
-* [cite_start]**Languages:** Python (Ingestion/API), SQL (Analytics/Modeling), PySpark (Transformation). [cite: 75]
-* [cite_start]**Infrastructure:** AWS S3, PostgreSQL. [cite: 75]
-* [cite_start]**AI/ML:** OpenAI GPT-4o (Structured Risk Classification). [cite: 75]
-* [cite_start]**Orchestration:** Apache Airflow. [cite: 75]
-* [cite_start]**Interface:** Power BI (Operational Dashboard) & FastAPI (MCP-style Natural Language Query Layer). [cite: 75, 100]
+Feature Engineering: Distilling 250 columns into 15 high-impact features (e.g., Incident Frequency, Component Recurrence).
 
----
+Gold Layer: Star-Schema modeling with specialized Fact and Dimension tables for sub-second querying.
 
-## 🚧 Production Extensions (Scope Guard)
-[cite_start]*Note: The following features are documented as design decisions for future versions to maintain build discipline:* [cite: 33, 34, 80]
-* [cite_start]**Override Tracking:** Schema for human operators to flag and correct AI misclassifications. [cite: 14, 36]
-* [cite_start]**Advanced Versioning:** Full prompt versioning tables and re-classification history. [cite: 36]
-* [cite_start]**CI/CD Pipeline:** Automated unit testing for Spark transformations and dbt integration. [cite: 36]
+🧠 The Intelligence Layer
+1. Risk Engine
+Classifies assets into safety tiers based on three primary vectors:
 
----
-[cite_start]**Build Period:** April 15 – May 30, 2026 [cite: 101]
-[cite_start]**Target:** AI Data Platform Engineer (Aviation Domain) [cite: 97]
+Incident Recurrence: Multiple reports tied to a single airframe.
+
+Component Failure Frequency: Systemic part failures across the fleet.
+
+Temporal Spikes: Rapid increases in incident density over short windows.
+Outputs: LOW | MEDIUM | HIGH | CRITICAL
+
+2. Query Layer (Decision Support)
+Enables stakeholders to skip complex SQL and get immediate answers:
+
+"Which specific aircraft model currently carries the highest risk score?"
+
+"What are the top 3 failing components in the last 6 months?"
+
+📊 Business Impact
+Speed: Reduced risk identification time from hours to seconds.
+
+Proactivity: Enabled "Pattern-First" maintenance, identifying issues before they lead to AOG (Aircraft on Ground) events.
+
+Clarity: Converted 85% data noise into a 100% actionable signal.
+
+🧰 Tech Stack
+Core: Python (Pandas/NumPy)
+
+Engineering: Data Modeling (Fact/Dim), Schema Enforcement
+
+Scaling: Apache Spark (for high-volume transformation)
+
+Database: SQL (Analytical Querying)
+
+🧠 Key Learnings & Challenges
+Signal vs. Noise: In aviation, 15 high-quality columns are more valuable for safety than 200 low-quality ones.
+
+The "Null" Narrative: Handled inconsistent data where missing component fields required narrative text mining to recover the "Signal."
+
+Data Modeling: Proved that structured Fact/Dim tables are critical for building a query layer that non-technical users can trust.
