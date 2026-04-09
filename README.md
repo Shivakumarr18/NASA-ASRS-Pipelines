@@ -1,66 +1,66 @@
-Aviation Decision Intelligence Platform (ADIP)
+🛫 Aviation Decision Intelligence Platform (ADIP)
 Executive Summary
-A specialized data engineering system designed to transform fragmented, high-entropy aviation safety records into actionable maintenance intelligence. This platform automates the identification of fleet-wide vulnerabilities, allowing teams to move from reactive repairs to proactive risk mitigation.
+A high-integrity data engineering system designed to transform fragmented, high-entropy aviation safety records into actionable maintenance intelligence. This platform automates the identification of fleet-wide vulnerabilities, reducing the "Data-to-Decision" window from hours to seconds.
 
 🚩 The Problem
-Aviation maintenance teams struggle with "Data Overload." Raw incident reports are:
+Aviation maintenance teams are often overwhelmed by "Data entropy." Raw incident reports are:
 
-Fragmented: Spread across inconsistent, messy CSV formats.
+Fragmented: Inconsistent schemas across legacy CSV formats.
 
-Noisy: ~250 columns of data with high nullity and redundant metadata.
+High-Noise: ~250 columns containing redundant metadata and high nullity.
 
-Static: Reports describe what happened but fail to prioritize which aircraft needs immediate attention.
-Impact: Critical risks are missed, and maintenance decisions are delayed by slow, manual SQL-dependent processes.
+Non-Prioritized: Thousands of reports exist, but there is no automated "Signal" to highlight Critical safety threats.
 
-🛠 The Solution
-An end-to-end pipeline that ingests raw ASRS data, applies a weighted Risk Engine, and structures the output into an analytics-ready Gold Layer for instant decision support.
+Business Impact: Delayed maintenance, increased operational costs, and higher safety risks due to slow, manual data triage.
 
 🏗 System Architecture (Medallion)
-Bronze Layer: Raw ingestion of hierarchical NASA ASRS datasets.
+The platform follows the industry-standard Medallion Architecture to ensure data lineage and reliability.
 
-Silver Layer: * Data Hygiene: Removal of "Ghost Rows," deduplication, and standardization.
+Bronze (Raw): Direct ingestion of hierarchical NASA ASRS datasets.
 
-Feature Engineering: Distilling 250 columns into 15 high-impact features (e.g., Incident Frequency, Component Recurrence).
+Silver (Refined): * Data Hygiene: Automated removal of "ghost rows," deduplication, and schema standardization.
 
-Gold Layer: Star-Schema modeling with specialized Fact and Dimension tables for sub-second querying.
+Feature Engineering: Distilling 250 columns into 15 High-Value Features (e.g., Incident Frequency, Component Recurrence).
+
+Gold (Analytics): Star-Schema modeling with specialized Fact and Dimension tables optimized for sub-second querying.
 
 🧠 The Intelligence Layer
-1. Risk Engine
-Classifies assets into safety tiers based on three primary vectors:
+1. Risk Engine (Core Logic)
+A custom algorithm that classifies assets into four safety tiers:
 
-Incident Recurrence: Multiple reports tied to a single airframe.
+Incident Recurrence: Tracks repeated reports tied to a specific airframe.
 
-Component Failure Frequency: Systemic part failures across the fleet.
+Component Failure Frequency: Identifies parts failing across the entire fleet.
 
-Temporal Spikes: Rapid increases in incident density over short windows.
-Outputs: LOW | MEDIUM | HIGH | CRITICAL
+Temporal Patterns: Detects rapid spikes in incident density over short windows.
+Outputs: CRITICAL | HIGH | MEDIUM | LOW
 
 2. Query Layer (Decision Support)
-Enables stakeholders to skip complex SQL and get immediate answers:
+An abstraction layer that enables stakeholders to get immediate answers to operational questions:
 
-"Which specific aircraft model currently carries the highest risk score?"
+"Which aircraft model currently carries the highest risk score?"
 
-"What are the top 3 failing components in the last 6 months?"
+"What components have the highest failure frequency in the last quarter?"
 
 📊 Business Impact
-Speed: Reduced risk identification time from hours to seconds.
+Operational Velocity: Reduced risk identification time from hours to seconds.
 
-Proactivity: Enabled "Pattern-First" maintenance, identifying issues before they lead to AOG (Aircraft on Ground) events.
+Proactive Safety: Enabled a "Pattern-First" approach, identifying mechanical trends before they result in grounding events.
 
-Clarity: Converted 85% data noise into a 100% actionable signal.
+Architecture Efficiency: Optimized the data footprint by 85% while retaining 100% of the technical signal.
 
 🧰 Tech Stack
-Core: Python (Pandas/NumPy)
+Languages: Python (Pandas/NumPy)
 
-Engineering: Data Modeling (Fact/Dim), Schema Enforcement
+Data Engineering: Star-Schema Modeling (Fact/Dim), Schema Enforcement.
 
-Scaling: Apache Spark (for high-volume transformation)
+Scaling: Apache Spark (Target for high-volume distributed transformation).
 
-Database: SQL (Analytical Querying)
+Analytics: SQL (Complex analytical window functions).
 
 🧠 Key Learnings & Challenges
-Signal vs. Noise: In aviation, 15 high-quality columns are more valuable for safety than 200 low-quality ones.
+Selective Cleaning: Real-world data is messy; choosing the right 15 columns is more valuable than processing all 250.
 
-The "Null" Narrative: Handled inconsistent data where missing component fields required narrative text mining to recover the "Signal."
+Data Modeling is Logic: Structured Fact/Dim tables are the only way to build a query layer that executives can trust.
 
-Data Modeling: Proved that structured Fact/Dim tables are critical for building a query layer that non-technical users can trust.
+Handling Ambiguity: Developed narrative text-mining logic to recover missing "Component" data from pilot descriptions.
