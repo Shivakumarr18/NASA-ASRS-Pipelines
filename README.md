@@ -1,6 +1,6 @@
 ✈️ Aviation Decision Intelligence Platform (ADIP)
 
-<<<<<<< HEAD
+HEAD
 Executive Summary A high-integrity data engineering system designed to transform fragmented, high-entropy aviation safety records into actionable maintenance intelligence. This platform automates the identification of fleet-wide vulnerabilities, reducing the "Data-to-Decision" window from hours to seconds.
 
 The Problem Aviation maintenance teams are often overwhelmed by "Data Entropy." Raw incident reports are:
@@ -35,7 +35,7 @@ Tech Stack CategoryTechnologyLanguagesPython (Pandas / NumPy)Data EngineeringSta
 Key Learnings and Challenges
 
 Selective Cleaning — Real-world data is messy. Choosing the right 15 columns is more valuable than processing all 250. Data Modeling is Logic — Structured Fact/Dim tables are the only way to build a query layer that executives can trust. Handling Ambiguity — Developed narrative text-mining logic to recover missing "Component" data from pilot descriptions.
-=======
+
 Executive Summary
 A high-integrity data engineering system designed to transform fragmented, high-entropy aviation safety records into actionable maintenance intelligence.
 This platform automates the identification of fleet-wide vulnerabilities, reducing the "Data-to-Decision" window from hours to seconds.
@@ -96,4 +96,3 @@ Key Learnings and Challenges
 Selective Cleaning — Real-world data is messy. Choosing the right 15 columns is more valuable than processing all 250.
 Data Modeling is Logic — Structured Fact/Dim tables are the only way to build a query layer that executives can trust.
 Handling Ambiguity — Developed narrative text-mining logic to recover missing "Component" data from pilot descriptions.
->>>>>>> b09da3550a0d678917688b9d589be45aa01213ae
