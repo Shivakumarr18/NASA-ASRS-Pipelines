@@ -1,7 +1,7 @@
 ✈️ Aviation Decision Intelligence Platform (ADIP)
 
-HEAD
-Executive Summary A high-integrity data engineering system designed to transform fragmented, high-entropy aviation safety records into actionable maintenance intelligence. This platform automates the identification of fleet-wide vulnerabilities, reducing the "Data-to-Decision" window from hours to seconds.
+Executive Summary:
+A high-integrity data engineering system designed to transform fragmented, high-entropy aviation safety records into actionable maintenance intelligence. This platform automates the identification of fleet-wide vulnerabilities, reducing the "Data-to-Decision" window from hours to seconds.
 
 The Problem Aviation maintenance teams are often overwhelmed by "Data Entropy." Raw incident reports are:
 
@@ -23,16 +23,17 @@ Incident Recurrence — Tracks repeated reports tied to a specific airframe. Com
 
 Outputs: TierLabelDescription🔴 1CRITICALImmediate action required🟠 2HIGHUrgent review needed🟡 3MEDIUMMonitor closely🟢 4LOWRoutine operations
 
-🔍 Query Layer (Decision Support) An abstraction layer that enables stakeholders to get immediate answers to operational questions:
+Query Layer (Decision Support) An abstraction layer that enables stakeholders to get immediate answers to operational questions:
 "Which aircraft model currently carries the highest risk score?" "What components have the highest failure frequency in the last quarter?"
 
-Business Impact
+Business Impact:
 
-⚡ Operational Velocity — Reduced risk identification time from hours to seconds. 🛡️ Proactive Safety — Enabled a "Pattern-First" approach, identifying mechanical trends before they result in grounding events. 📦 Architecture Efficiency — Optimized the data footprint by 85% while retaining 100% of the technical signal.
+Operational Velocity — Reduced risk identification time from hours to seconds. 🛡️ Proactive Safety — Enabled a "Pattern-First" approach, identifying mechanical trends before they result in grounding events.
+Architecture Efficiency — Optimized the data footprint by 85% while retaining 100% of the technical signal.
 
 Tech Stack CategoryTechnologyLanguagesPython (Pandas / NumPy)Data EngineeringStar-Schema Modeling (Fact / Dim), Schema EnforcementScalingApache Spark (Target for high-volume distributed transformation)AnalyticsSQL (Complex analytical window functions)
 
-Key Learnings and Challenges
+Key Learnings and Challenges:
 
 Selective Cleaning — Real-world data is messy. Choosing the right 15 columns is more valuable than processing all 250. Data Modeling is Logic — Structured Fact/Dim tables are the only way to build a query layer that executives can trust. Handling Ambiguity — Developed narrative text-mining logic to recover missing "Component" data from pilot descriptions.
 
@@ -74,18 +75,17 @@ Temporal Patterns — Detects rapid spikes in incident density over short window
 Outputs:
 TierLabelDescription🔴 1CRITICALImmediate action required🟠 2HIGHUrgent review needed🟡 3MEDIUMMonitor closely🟢 4LOWRoutine operations
 
-2. 🔍 Query Layer (Decision Support)
+2. Query Layer (Decision Support)
 An abstraction layer that enables stakeholders to get immediate answers to operational questions:
 
 "Which aircraft model currently carries the highest risk score?"
 "What components have the highest failure frequency in the last quarter?"
 
 
-Business Impact
-
-⚡ Operational Velocity — Reduced risk identification time from hours to seconds.
-🛡️ Proactive Safety — Enabled a "Pattern-First" approach, identifying mechanical trends before they result in grounding events.
-📦 Architecture Efficiency — Optimized the data footprint by 85% while retaining 100% of the technical signal.
+Business Impact:
+Operational Velocity — Reduced risk identification time from hours to seconds.
+Proactive Safety — Enabled a "Pattern-First" approach, identifying mechanical trends before they result in grounding events.
+Architecture Efficiency — Optimized the data footprint by 85% while retaining 100% of the technical signal.
 
 
 Tech Stack
