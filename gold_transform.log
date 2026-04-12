@@ -35,3 +35,40 @@
 2026-04-12 12:31:45,478 | INFO  |   dim_component:   323 rows x 2 cols
 2026-04-12 12:31:45,478 | INFO  |   dim_narrative:   4500 rows x 4 cols
 2026-04-12 12:31:45,479 | INFO  |   fact_incidents:  4500 rows x 11 cols
+2026-04-12 12:45:32,828 | INFO  | ============================================================
+2026-04-12 12:45:32,829 | INFO  | GOLD LAYER TRANSFORMATION — START
+2026-04-12 12:45:32,829 | INFO  | ============================================================
+2026-04-12 12:45:32,829 | INFO  | Loading Silver file from: C:\Users\shivn\NASA-ASRS-Pipelines\data\silver\ASRS_SILVER_FINAL.csv
+2026-04-12 12:45:32,903 | INFO  | Silver loaded: 4500 rows, 17 columns
+2026-04-12 12:45:32,904 | INFO  | Silver validation passed — 17 columns, ACN is unique
+2026-04-12 12:45:32,904 | INFO  | [Step 1] Building dim_time...
+2026-04-12 12:45:32,908 | INFO  |   dim_time: 25 unique dates
+2026-04-12 12:45:32,908 | INFO  | [Step 2] Building dim_aircraft...
+2026-04-12 12:45:32,913 | INFO  |   dim_aircraft: 1960 unique aircraft combinations
+2026-04-12 12:45:32,914 | INFO  | [Step 3] Building dim_environment...
+2026-04-12 12:45:32,916 | INFO  |   dim_environment: 24 unique environment combinations
+2026-04-12 12:45:32,916 | INFO  | [Step 4] Building dim_component...
+2026-04-12 12:45:32,917 | INFO  |   dim_component: 323 unique components
+2026-04-12 12:45:32,917 | INFO  | [Step 5] Building dim_narrative...
+2026-04-12 12:45:32,920 | INFO  |   dim_narrative: 4500 narratives stored
+2026-04-12 12:45:32,920 | INFO  | [Step 6] Building fact_incidents...
+2026-04-12 12:45:32,942 | INFO  |   fact_incidents: 4500 rows, 11 columns
+2026-04-12 12:45:32,943 | INFO  |   Fact table validation passed — row count matches Silver, foreign keys checked
+2026-04-12 12:45:32,943 | INFO  | [Step 7] Saving Gold layer tables...
+2026-04-12 12:45:32,946 | INFO  |   Saved dim_time.csv — 25 rows, 7 columns
+2026-04-12 12:45:32,951 | INFO  |   Saved dim_aircraft.csv — 1960 rows, 6 columns
+2026-04-12 12:45:32,952 | INFO  |   Saved dim_environment.csv — 24 rows, 3 columns
+2026-04-12 12:45:32,954 | INFO  |   Saved dim_component.csv — 323 rows, 2 columns
+2026-04-12 12:45:33,030 | INFO  |   Saved dim_narrative.csv — 4500 rows, 4 columns
+2026-04-12 12:45:33,044 | INFO  |   Saved fact_incidents.csv — 4500 rows, 11 columns
+2026-04-12 12:45:33,045 | INFO  | ============================================================
+2026-04-12 12:45:33,045 | INFO  | GOLD LAYER TRANSFORMATION — COMPLETE
+2026-04-12 12:45:33,045 | INFO  | ============================================================
+2026-04-12 12:45:33,045 | INFO  | 
+2026-04-12 12:45:33,046 | INFO  | GOLD LAYER SUMMARY:
+2026-04-12 12:45:33,046 | INFO  |   dim_time:        25 rows x 7 cols
+2026-04-12 12:45:33,046 | INFO  |   dim_aircraft:    1960 rows x 6 cols
+2026-04-12 12:45:33,046 | INFO  |   dim_environment: 24 rows x 3 cols
+2026-04-12 12:45:33,047 | INFO  |   dim_component:   323 rows x 2 cols
+2026-04-12 12:45:33,047 | INFO  |   dim_narrative:   4500 rows x 4 cols
+2026-04-12 12:45:33,047 | INFO  |   fact_incidents:  4500 rows x 11 cols
