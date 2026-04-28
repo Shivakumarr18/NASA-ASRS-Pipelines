@@ -44,10 +44,10 @@ NARRATIVE_OUTPUT = os.path.join(GOLD_DIR, "dim_narrative_classified.csv")
 LOG_PATH = os.path.join(PROJECT_ROOT, "ai_classify.log")
 ENV_PATH = os.path.join(PROJECT_ROOT, ".env")
 
-# Free tier rate limits (Gemini 2.0 Flash)
-REQUESTS_PER_MINUTE = 15
+# Free tier rate limits (Gemini 2.5 Flash Lite — verified Apr 2026)
+REQUESTS_PER_MINUTE = 30
 DAILY_LIMIT = 1500
-DELAY_BETWEEN_REQUESTS = 4.5  # seconds (gives ~13 RPM, safe under 15 RPM cap)
+DELAY_BETWEEN_REQUESTS = 2.5  # seconds (gives ~24 RPM, safe under 30 RPM cap)
 
 # Process in batches and save progress (recovery from crashes)
 SAVE_EVERY_N = 50
@@ -106,7 +106,7 @@ def init_gemini_client(api_key):
         )
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
     # Smoke test — verify the key actually works before processing 4500 rows
     try:
@@ -237,6 +237,7 @@ def save_progress(df_classified, output_path):
 # ─────────────────────────────────────────────
 def process_narratives(model, df_existing, df_pending):
     """Classify each pending narrative, saving progress periodically."""
+    df_pending = df_pending.sample(50, random_state=42)    # TEMPORARY: random 50 rows for testing - REMOVE for full run
     logger.info(f"[Processing] {df_pending.shape[0]} narratives to classify")
     logger.info(f"  Estimated time: {df_pending.shape[0] * DELAY_BETWEEN_REQUESTS / 60:.1f} minutes")
 
