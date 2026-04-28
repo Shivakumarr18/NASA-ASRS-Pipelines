@@ -106,7 +106,7 @@ def init_gemini_client(api_key):
         )
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash-exp")
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
     # Smoke test — verify the key actually works before processing 4500 rows
     try:
