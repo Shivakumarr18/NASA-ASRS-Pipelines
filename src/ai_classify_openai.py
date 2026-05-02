@@ -1,27 +1,30 @@
 """
-AI Classification Layer — NASA ASRS Aviation Risk Triage Platform
-==================================================================
-Reads narratives from dim_narrative, calls Google Gemini API to classify
-each incident into a risk tier with reasoning, and saves results back
-to the Gold layer.
+AI Classification Layer (OpenAI Version) — NASA ASRS Aviation Risk Triage Platform
+====================================================================================
+Production classifier using OpenAI's gpt-4o-mini model.
 
-Risk Tiers:
-  - CRITICAL : Immediate action required (safety-critical events)
-  - HIGH     : Urgent review needed (significant risk indicators)
-  - MEDIUM   : Monitor closely (procedural/minor anomalies)
-  - LOW      : Routine operations (informational reports)
+This file mirrors src/ai_classify.py (Gemini version) but uses OpenAI as the provider.
+Both files coexist intentionally — they document the multi-provider evaluation:
 
-Output: data/gold/dim_narrative_classified.csv
-        (with risk_tier, risk_reasoning, key_factors columns added)
+  - ai_classify.py        → Gemini free tier (validation, hit rate limits at 10 rows)
+  - ai_classify_openai.py → OpenAI gpt-4o-mini (production, unrestricted throughput)
 
-Design Principles:
+Output: data/gold/dim_narrative_classified_openai.csv
+        (separate from Gemini output for direct comparison)
+
+Design Principles (identical to Gemini version):
   - Idempotent: Re-running skips already-classified incidents
   - Fail-safe: API failures logged, processing continues for other rows
-  - Cost-aware: Free tier rate limits respected (15 RPM, 1500/day)
+  - Cost-aware: Hard cap of $5 enforced via OpenAI dashboard, prepaid credits only
   - Auditable: Every classification logged with timestamp
   - Explainable: Each tier comes with reasoning and key factors
 
-Author: Shiva Kumar Goud
+Cost estimate:
+  - Model: gpt-4o-mini ($0.15 / 1M input tokens, $0.60 / 1M output tokens)
+  - ~650 tokens per incident × 4500 incidents = ~3M tokens
+  - Total cost: ~$1.50 - $2.00 for the entire dataset
+
+Author: Shiva Kumar
 """
 
 import os
@@ -40,22 +43,25 @@ PROJECT_ROOT = os.path.abspath(os.path.join(BASE_PATH, ".."))
 
 GOLD_DIR = os.path.join(PROJECT_ROOT, "data", "gold")
 NARRATIVE_INPUT = os.path.join(GOLD_DIR, "dim_narrative.csv")
-NARRATIVE_OUTPUT = os.path.join(GOLD_DIR, "dim_narrative_classified.csv")
-LOG_PATH = os.path.join(PROJECT_ROOT, "ai_classify.log")
+NARRATIVE_OUTPUT = os.path.join(GOLD_DIR, "dim_narrative_classified_openai.csv")
+LOG_PATH = os.path.join(PROJECT_ROOT, "ai_classify_openai.log")
 ENV_PATH = os.path.join(PROJECT_ROOT, ".env")
 
-# Free tier rate limits (Gemini 2.5 Flash Lite — verified Apr 2026)
-REQUESTS_PER_MINUTE = 30
-DAILY_LIMIT = 1500
-DELAY_BETWEEN_REQUESTS = 2.5  # seconds (gives ~24 RPM, safe under 30 RPM cap)
+# OpenAI rate limits (Tier 1 - new accounts with $5 credit)
+# gpt-4o-mini: 500 RPM, 200,000 TPM, 10,000 RPD
+DELAY_BETWEEN_REQUESTS = 0.5  # seconds (gives ~120 RPM, well under 500 RPM cap)
+DAILY_LIMIT = 4500  # process all incidents in one run
 
 # Process in batches and save progress (recovery from crashes)
-SAVE_EVERY_N = 50
+SAVE_EVERY_N = 25  # save more frequently — crash protection
+
+# Model choice
+OPENAI_MODEL = "gpt-4o-mini"
 
 # ─────────────────────────────────────────────
 # LOGGING SETUP
 # ─────────────────────────────────────────────
-logger = logging.getLogger("ai_classify")
+logger = logging.getLogger("ai_classify_openai")
 logger.setLevel(logging.INFO)
 
 file_handler = logging.FileHandler(LOG_PATH, mode="a", encoding="utf-8")
@@ -73,52 +79,56 @@ logger.addHandler(stream_handler)
 # STEP 0 — LOAD ENVIRONMENT VARIABLES
 # ─────────────────────────────────────────────
 def load_api_key():
-    """Load the Gemini API key from .env file. Fail fast if missing."""
+    """Load the OpenAI API key from .env file. Fail fast if missing."""
     if not os.path.exists(ENV_PATH):
         raise FileNotFoundError(
             f".env file not found at {ENV_PATH}\n"
-            "Create a .env file in the project root with: GEMINI_API_KEY=your_key_here"
+            "Create a .env file in the project root with: OPENAI_API_KEY=your_key_here"
         )
 
     with open(ENV_PATH, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            if line.startswith("GEMINI_API_KEY="):
+            if line.startswith("OPENAI_API_KEY="):
                 key = line.split("=", 1)[1].strip().strip('"').strip("'")
                 if not key:
-                    raise ValueError("GEMINI_API_KEY is empty in .env file")
+                    raise ValueError("OPENAI_API_KEY is empty in .env file")
                 return key
 
-    raise ValueError("GEMINI_API_KEY not found in .env file")
+    raise ValueError("OPENAI_API_KEY not found in .env file")
 
 
 # ─────────────────────────────────────────────
-# STEP 1 — INITIALIZE GEMINI CLIENT
+# STEP 1 — INITIALIZE OPENAI CLIENT
 # ─────────────────────────────────────────────
-def init_gemini_client(api_key):
-    """Initialize the Gemini API client. Fail fast on import or auth issues."""
+def init_openai_client(api_key):
+    """Initialize the OpenAI API client. Fail fast on import or auth issues."""
     try:
-        import google.generativeai as genai
+        from openai import OpenAI
     except ImportError:
         raise ImportError(
-            "google-generativeai package not installed.\n"
-            "Run: pip install google-generativeai"
+            "openai package not installed.\n"
+            "Run: pip install openai"
         )
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    client = OpenAI(api_key=api_key)
 
     # Smoke test — verify the key actually works before processing 4500 rows
     try:
-        test_response = model.generate_content("Reply with just the word: OK")
-        if "OK" not in test_response.text.upper():
-            logger.warning(f"Smoke test returned unexpected response: {test_response.text}")
+        test_response = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[{"role": "user", "content": "Reply with just the word: OK"}],
+            max_tokens=10
+        )
+        response_text = test_response.choices[0].message.content.strip()
+        if "OK" not in response_text.upper():
+            logger.warning(f"Smoke test returned unexpected response: {response_text}")
         else:
-            logger.info("Gemini API smoke test passed")
+            logger.info(f"OpenAI API smoke test passed (model: {OPENAI_MODEL})")
     except Exception as e:
-        raise RuntimeError(f"Gemini API authentication failed: {e}")
+        raise RuntimeError(f"OpenAI API authentication failed: {e}")
 
-    return model
+    return client
 
 
 # ─────────────────────────────────────────────
@@ -127,7 +137,7 @@ def init_gemini_client(api_key):
 def load_narratives():
     """Load dim_narrative. Resume from existing classified file if present."""
     logger.info("=" * 60)
-    logger.info("AI CLASSIFICATION LAYER — START")
+    logger.info(f"AI CLASSIFICATION LAYER (OpenAI) — START")
     logger.info("=" * 60)
 
     if not os.path.exists(NARRATIVE_INPUT):
@@ -157,7 +167,7 @@ def load_narratives():
 # STEP 3 — BUILD CLASSIFICATION PROMPT
 # ─────────────────────────────────────────────
 def build_prompt(narrative, synopsis):
-    """Build the classification prompt. Same prompt for every row — keeps results consistent."""
+    """Build the classification prompt. SAME prompt as Gemini version for fair comparison."""
     narrative_text = str(narrative)[:3000] if narrative else "NO NARRATIVE PROVIDED"
     synopsis_text = str(synopsis)[:500] if synopsis else "NO SYNOPSIS PROVIDED"
 
@@ -185,22 +195,22 @@ Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
 
 
 # ─────────────────────────────────────────────
-# STEP 4 — CALL GEMINI API
+# STEP 4 — CALL OPENAI API
 # ─────────────────────────────────────────────
-def classify_incident(model, narrative, synopsis):
-    """Call Gemini API for one incident. Returns dict with tier, reasoning, factors."""
+def classify_incident(client, narrative, synopsis):
+    """Call OpenAI API for one incident. Returns dict with tier, reasoning, factors."""
     prompt = build_prompt(narrative, synopsis)
+    raw_text = ""
 
     try:
-        response = model.generate_content(prompt)
-        raw_text = response.text.strip()
-
-        # Strip markdown code fences if present
-        if raw_text.startswith("```"):
-            raw_text = raw_text.split("```")[1]
-            if raw_text.startswith("json"):
-                raw_text = raw_text[4:]
-            raw_text = raw_text.strip()
+        response = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,  # low temperature for consistent classification
+            max_tokens=300,
+            response_format={"type": "json_object"}  # forces JSON output
+        )
+        raw_text = response.choices[0].message.content.strip()
 
         result = json.loads(raw_text)
 
@@ -235,9 +245,8 @@ def save_progress(df_classified, output_path):
 # ─────────────────────────────────────────────
 # STEP 6 — MAIN PROCESSING LOOP
 # ─────────────────────────────────────────────
-def process_narratives(model, df_existing, df_pending):
+def process_narratives(client, df_existing, df_pending):
     """Classify each pending narrative, saving progress periodically."""
-    df_pending = df_pending.sample(50, random_state=42)    # TEMPORARY: random 50 rows for testing - REMOVE for full run
     logger.info(f"[Processing] {df_pending.shape[0]} narratives to classify")
     logger.info(f"  Estimated time: {df_pending.shape[0] * DELAY_BETWEEN_REQUESTS / 60:.1f} minutes")
 
@@ -251,7 +260,7 @@ def process_narratives(model, df_existing, df_pending):
             logger.warning(f"  Reached daily limit ({DAILY_LIMIT}). Stopping. Resume tomorrow.")
             break
 
-        result = classify_incident(model, row.get("narrative", ""), row.get("synopsis", ""))
+        result = classify_incident(client, row.get("narrative", ""), row.get("synopsis", ""))
 
         new_row = row.to_dict()
         new_row.update(result)
@@ -286,7 +295,7 @@ def process_narratives(model, df_existing, df_pending):
 def final_audit(df_final):
     """Print summary of classifications."""
     logger.info("=" * 60)
-    logger.info("CLASSIFICATION SUMMARY")
+    logger.info("CLASSIFICATION SUMMARY (OpenAI)")
     logger.info("=" * 60)
     logger.info(f"Total rows: {df_final.shape[0]}")
 
@@ -307,10 +316,10 @@ def main():
     try:
         # Load API key from .env (fail fast if missing)
         api_key = load_api_key()
-        logger.info("API key loaded from .env")
+        logger.info("OpenAI API key loaded from .env")
 
-        # Initialize Gemini client (fail fast if auth fails)
-        model = init_gemini_client(api_key)
+        # Initialize OpenAI client (fail fast if auth fails)
+        client = init_openai_client(api_key)
 
         # Load data (resumes from existing output if present)
         df_input, df_existing, df_pending = load_narratives()
@@ -321,13 +330,13 @@ def main():
             return
 
         # Process
-        df_final = process_narratives(model, df_existing, df_pending)
+        df_final = process_narratives(client, df_existing, df_pending)
 
         # Audit
         final_audit(df_final)
 
     except Exception as e:
-        logger.error(f"AI CLASSIFICATION FAILED: {e}")
+        logger.error(f"AI CLASSIFICATION (OpenAI) FAILED: {e}")
         raise
 
 
