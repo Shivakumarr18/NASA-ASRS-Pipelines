@@ -51,3 +51,4 @@ WHERE c.component_name != 'UNKNOWN'
 GROUP BY a.make_model_name, c.component_name
 ORDER BY incident_count DESC
 LIMIT 10;
+
