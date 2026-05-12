@@ -13,7 +13,7 @@ Outcome: By identifying the physical index of the 19 core columns, we achieved 1
 2. Data Quality Tiering
    We have implemented a Tiered Governance Model to categorize the reliability of our data:
 
-Tier 1 (Production Ready): 95%+ completeness. (Used for Core AI Training).
+Tier 1 (Production Ready): 95%+ completeness. (Used for Core AI Training)..
 
 Tier 2 (Analytical Grade): 70-94% completeness. (Used for Trend Analysis).
 
