@@ -1,6 +1,6 @@
 # NASA ASRS Aviation Risk Triage Pipeline
 
-End-to-end data engineering project on NASA's Aviation Safety Reporting System (ASRS) dataset. Ingests 4,500 pilot-submitted incident reports, applies medallion architecture for refinement, classifies each incident into risk tiers using AI, and surfaces patterns through a Power BI dashboard.//
+End-to-end data engineering project on NASA's Aviation Safety Reporting System (ASRS) dataset. Ingests 4,500 pilot-submitted incident reports, applies medallion architecture for refinement, classifies each incident into risk tiers using AI, and surfaces patterns through a Power BI dashboard.
 
 ---
 
