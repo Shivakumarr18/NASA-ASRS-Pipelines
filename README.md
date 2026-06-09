@@ -4,7 +4,7 @@ End-to-end data engineering project on NASA's Aviation Safety Reporting System (
 
 ---
 
-## What this project does
+## What this project does:
 
 - Ingests raw NASA ASRS incident data (4,502 rows × 125 columns) with documented schema handling
 - Cleans and validates through a Silver layer (17 high-value columns, 5-rule validation gate)
